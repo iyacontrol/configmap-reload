@@ -1,0 +1,11 @@
+[package]
+name = "file-config-reload"
+version = "0.1.0"
+authors = ["gaohj <gaohj2015@yeah.net>"]
+edition = "2018"
+
+[dependencies]
+notify = "4.0.0"
+log = "0.4.6"
+simple_logger = "1.0.1"
+clap = "2.32.0"
