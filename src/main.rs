@@ -4,10 +4,8 @@ extern crate simple_logger;
 extern crate clap;
 
 use log::{debug, error};
-
-use notify::{Watcher, RecursiveMode, watcher};
+use notify::{Watcher, RecursiveMode, RawEvent, raw_watcher};
 use std::sync::mpsc::channel;
-use std::time::Duration;
 use clap::{crate_authors, crate_description, crate_name, crate_version};
 use std::process;
 
@@ -53,6 +51,7 @@ fn main() {
        error!("watch_path can be empty!");
        process::exit(1);
    }
+
     debug!("watch path is {}", watch_path);
 
 
@@ -61,7 +60,7 @@ fn main() {
 
     // Create a watcher object, delivering debounced events.
     // The notification back-end is selected based on the platform.
-    let mut watcher = watcher(tx, Duration::from_secs(10)).unwrap();
+    let mut watcher = raw_watcher(tx).unwrap();
 
     // Add a path to be watched. All files and directories at that path and
     // below will be monitored for changes.
@@ -69,8 +68,27 @@ fn main() {
 
     loop {
         match rx.recv() {
-            Ok(event) => debug!("{:?}", event),
+            Ok(RawEvent{path: Some(path), op: Ok(op), cookie: _}) => {
+                if op == notify::op::CREATE {
+                    if file_base(path.to_str().unwrap()) == "..data" {
+                        debug!("{:?}", path)
+                    }
+                }
+            },
+            Ok(event) => debug!("broken event: {:?}", event),
             Err(e) => error!("watch error: {:?}", e),
         }
     }
+}
+
+fn file_base(_path: &str) -> &str {
+    if _path == "" {
+        return ".";
+    }
+    let v: Vec<&str> = _path.split("/").collect();
+
+    if v.len() > 1 {
+        return  v[v.len() -1 ];
+    }
+    "."
 }
