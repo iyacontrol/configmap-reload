@@ -87,8 +87,5 @@ fn file_base(_path: &str) -> &str {
     }
     let v: Vec<&str> = _path.split("/").collect();
 
-    if v.len() > 1 {
-        return  v[v.len() -1 ];
-    }
-    "."
+    return  v[v.len() -1 ];
 }
