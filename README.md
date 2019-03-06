@@ -1,2 +1,2 @@
-# file-config-reload
-this repo is used for file config reload.
+# configmap-reload
+this repo is used for configmap in k8s reload.

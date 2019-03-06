@@ -3,11 +3,13 @@ extern crate log;
 extern crate simple_logger;
 extern crate clap;
 
-use log::{debug, error};
+
+use log::{debug, info,error};
 use notify::{Watcher, RecursiveMode, RawEvent, raw_watcher};
 use std::sync::mpsc::channel;
 use clap::{crate_authors, crate_description, crate_name, crate_version};
 use std::process;
+
 
 fn main() {
 
@@ -16,11 +18,32 @@ fn main() {
         .author(crate_authors!())
         .about(crate_description!())
         .arg(
-            clap::Arg::with_name("WATCH_PATH")
+            clap::Arg::with_name("VOLUME_PATH")
                 .long("path")
                 .short("p")
                 .default_value("")
-                .help("directory of the watch path")
+                .help("the config map volume directory to watch for updates")
+        )
+        .arg(
+            clap::Arg::with_name("WEBHOOK_URLS")
+                .long("webhook_urls")
+                .short("u")
+                .default_value("")
+                .help("the HTTP method url to use to send the webhook")
+        )
+        .arg(
+            clap::Arg::with_name("WEBHOOK_METHOD")
+                .long("webhook_method")
+                .short("m")
+                .default_value("POST")
+                .help("the HTTP method url to use to send the webhook")
+        )
+        .arg(
+            clap::Arg::with_name("WEBHOOK_STATUS_CODE")
+                .long("webhook_status_code")
+                .short("c")
+                .default_value("200")
+                .help("the HTTP status code indicating successful triggering of reload")
         )
         .arg(
             clap::Arg::with_name("LOG_LEVEL")
@@ -42,18 +65,42 @@ fn main() {
 
     simple_logger::init_with_level(log_level).unwrap();
 
-    let watch_path = matches
-        .value_of("WATCH_PATH")
+    let volume_path = matches
+        .value_of("VOLUME_PATH")
         .unwrap();
 
 
-   if watch_path == "" {
-       error!("watch_path can be empty!");
+   if volume_path == "" {
+       error!("volume_path can be empty!");
        process::exit(1);
    }
 
-    debug!("watch path is {}", watch_path);
+    debug!("watch path is {}", volume_path);
 
+
+    let webhook_urls: Vec<_> = matches.values_of("WEBHOOK_URLS").unwrap().collect();
+
+    if webhook_urls.len() == 0 {
+        error!("webhook_urls can be empty!");
+        process::exit(1);
+    }
+
+
+    let webhook_method: reqwest::Method = matches
+        .value_of("WEBHOOK_METHOD")
+        .unwrap()
+        .parse()
+        .expect("unable to parse http method");
+
+    debug!("webhook method is {}", webhook_method);
+
+    let webhook_status_code: i32 = matches
+        .value_of("WEBHOOK_STATUS_CODE")
+        .unwrap()
+        .parse()
+        .expect("unable to parse http method");
+
+    debug!("webhook status code  is {}", webhook_status_code);
 
     // Create a channel to receive the events.
     let (tx, rx) = channel();
@@ -64,14 +111,25 @@ fn main() {
 
     // Add a path to be watched. All files and directories at that path and
     // below will be monitored for changes.
-    watcher.watch(watch_path, RecursiveMode::Recursive).unwrap();
+    watcher.watch(volume_path, RecursiveMode::Recursive).unwrap();
 
     loop {
         match rx.recv() {
             Ok(RawEvent{path: Some(path), op: Ok(op), cookie: _}) => {
                 if op == notify::op::CREATE {
                     if file_base(path.to_str().unwrap()) == "..data" {
-                        debug!("{:?}", path)
+                        info!("{}", "config map updated");
+                        let mut easy = Easy::new();
+
+                        for _url in webhook_urls.iter() {
+                            easy.me
+                            easy.url(_url).unwrap();
+
+                            easy.perform().unwrap();
+
+                        }
+
+                        info!("{}", "successfully triggered reload")
                     }
                 }
             },

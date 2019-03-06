@@ -17,3 +17,5 @@ Cargo.lock
 **/*.rs.bk
 
 test
+
+cmake-build-debug
