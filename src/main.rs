@@ -2,6 +2,7 @@ extern crate notify;
 extern crate log;
 extern crate simple_logger;
 extern crate clap;
+extern crate reqwest;
 
 
 use log::{debug, info,error};
@@ -25,8 +26,8 @@ fn main() {
                 .help("the config map volume directory to watch for updates")
         )
         .arg(
-            clap::Arg::with_name("WEBHOOK_URLS")
-                .long("webhook_urls")
+            clap::Arg::with_name("WEBHOOK_URL")
+                .long("webhook_url")
                 .short("u")
                 .default_value("")
                 .help("the HTTP method url to use to send the webhook")
@@ -36,7 +37,7 @@ fn main() {
                 .long("webhook_method")
                 .short("m")
                 .default_value("POST")
-                .help("the HTTP method url to use to send the webhook")
+                .help("the HTTP method url to use to send the webhook: GET|POST")
         )
         .arg(
             clap::Arg::with_name("WEBHOOK_STATUS_CODE")
@@ -78,12 +79,17 @@ fn main() {
     debug!("watch path is {}", volume_path);
 
 
-    let webhook_urls: Vec<_> = matches.values_of("WEBHOOK_URLS").unwrap().collect();
+    let webhook_url = matches
+        .value_of("WEBHOOK_URL")
+        .unwrap();
 
-    if webhook_urls.len() == 0 {
+
+    if webhook_url == "" {
         error!("webhook_urls can be empty!");
         process::exit(1);
     }
+
+    debug!("webhook_url is {}", webhook_url);
 
 
     let webhook_method: reqwest::Method = matches
@@ -92,9 +98,14 @@ fn main() {
         .parse()
         .expect("unable to parse http method");
 
+    if webhook_method != reqwest::Method::POST || webhook_method != reqwest::Method::GET {
+        error!("others method can not support for now!");
+        process::exit(1);
+    }
+
     debug!("webhook method is {}", webhook_method);
 
-    let webhook_status_code: i32 = matches
+    let webhook_status_code: reqwest::StatusCode  = matches
         .value_of("WEBHOOK_STATUS_CODE")
         .unwrap()
         .parse()
@@ -119,14 +130,17 @@ fn main() {
                 if op == notify::op::CREATE {
                     if file_base(path.to_str().unwrap()) == "..data" {
                         info!("{}", "config map updated");
-                        let mut easy = Easy::new();
+                        let client = reqwest::Client::new();
 
-                        for _url in webhook_urls.iter() {
-                            easy.me
-                            easy.url(_url).unwrap();
+                        let method = webhook_method.clone();
 
-                            easy.perform().unwrap();
-
+                        match client.request(method, webhook_url).send() {
+                            Ok(res) => {
+                                if res.status() != webhook_status_code {
+                                    error!("error: Received response code {}, expected: {} ", res.status(), webhook_status_code);
+                                }
+                            },
+                            Err(e) => error!("webhook error: {:?}", e),
                         }
 
                         info!("{}", "successfully triggered reload")
