@@ -136,10 +136,7 @@ fn main() {
                     if file_base(path.to_str().unwrap()) == "..data" {
                         info!("{}", "config map updated");
                         let client = reqwest::Client::new();
-
-                        let method = webhook_method.clone();
-
-                        match client.request(method, webhook_url).send() {
+                        match client.request(webhook_method.clone(), webhook_url).send() {
                             Ok(res) => {
                                 if res.status() != webhook_status_code {
                                     error!("error: Received response code {}, expected: {} ", res.status(), webhook_status_code);
