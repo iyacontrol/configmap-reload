@@ -58,3 +58,11 @@ spec:
 ---
 
 ```
+
+## 资源消耗
+
+```sh
+[root@ip-172-xx-xx-10 src]# kubectl top pods
+NAME                                CPU(cores)   MEMORY(bytes)
+configmap-reload-6bbbb8b45b-7zg2x   0m           1Mi
+```
