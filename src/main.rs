@@ -10,6 +10,8 @@ use notify::{Watcher, RecursiveMode, RawEvent, raw_watcher};
 use std::sync::mpsc::channel;
 use clap::{crate_authors, crate_description, crate_name, crate_version};
 use std::process;
+use std::str::FromStr;
+
 
 
 fn main() {
@@ -92,18 +94,21 @@ fn main() {
     debug!("webhook_url is {}", webhook_url);
 
 
-    let webhook_method: reqwest::Method = matches
+    let webhook_method_str = matches
         .value_of("WEBHOOK_METHOD")
-        .unwrap()
-        .parse()
-        .expect("unable to parse http method");
+        .unwrap();
 
-    if webhook_method != reqwest::Method::POST || webhook_method != reqwest::Method::GET {
-        error!("others method can not support for now!");
-        process::exit(1);
+    let webhook_method = reqwest::Method::from_str(webhook_method_str).unwrap();
+
+
+    match webhook_method {
+        reqwest::Method::GET | reqwest::Method::POST => debug!("webhook method is {}", webhook_method),
+        _ => {
+            error!("GET | POST method can  support for now!");
+            process::exit(1);
+        },
     }
 
-    debug!("webhook method is {}", webhook_method);
 
     let webhook_status_code: reqwest::StatusCode  = matches
         .value_of("WEBHOOK_STATUS_CODE")
