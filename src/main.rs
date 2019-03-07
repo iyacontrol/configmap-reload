@@ -74,7 +74,7 @@ fn main() {
 
 
    if volume_path == "" {
-       error!("volume_path can be empty!");
+       error!("volume_path can not be empty!");
        process::exit(1);
    }
 
@@ -87,7 +87,7 @@ fn main() {
 
 
     if webhook_url == "" {
-        error!("webhook_urls can be empty!");
+        error!("webhook_urls can not be empty!");
         process::exit(1);
     }
 
@@ -104,7 +104,7 @@ fn main() {
     match webhook_method {
         reqwest::Method::GET | reqwest::Method::POST => debug!("webhook method is {}", webhook_method),
         _ => {
-            error!("GET | POST method can  support for now!");
+            error!("only GET | POST method   support for now!");
             process::exit(1);
         },
     }
