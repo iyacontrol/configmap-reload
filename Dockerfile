@@ -15,10 +15,10 @@
 # COPY --from=builder /app/configmap-reload/target/release/configmap-reload /configmap-reload
 # ENTRYPOINT ["/configmap-reload"]
 
-FROM gcr.io/distroless/cc
+# FROM gcr.io/distroless/cc
+# COPY ./target/release/configmap-reload /configmap-reload
+# ENTRYPOINT ["/configmap-reload"]
+
+FROM centos:7
 COPY ./target/release/configmap-reload /configmap-reload
 ENTRYPOINT ["/configmap-reload"]
-
-# FROM centos:7
-# COPY --from=builder /app/configmap-reload/target/release/configmap-reload /configmap-reload
-# ENTRYPOINT ["/configmap-reload"]
