@@ -48,7 +48,7 @@
 FROM rustlang/rust:nightly as builder
 WORKDIR /app/src
 RUN USER=root cargo new --bin configmap-reload
-COPY Cargo.toml Cargo.lock ./ht/
+COPY Cargo.toml Cargo.lock ./configmap-reload/
 
 WORKDIR /app/src/configmap-reload
 RUN cargo build --release
