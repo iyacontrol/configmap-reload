@@ -40,7 +40,7 @@ spec:
       - name: configmap-reload
         image: 'iyacontrol/configmap-reload:v0.1'
         command:
-          - /usr/local/bin/configmap-reload
+          - configmap-reload
         args:
           - -l
           - debug
