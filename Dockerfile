@@ -45,24 +45,26 @@
 # RUN cargo build --release
 # ENTRYPOINT ["/app/configmap-reload/target/release/configmap-reload"]
 
-FROM rustlang/rust:nightly as builder
-WORKDIR /app/src
-RUN USER=root cargo new --bin configmap-reload
-COPY Cargo.toml Cargo.lock ./configmap-reload/
+FROM clux/muslrust:stable as builder
 
-WORKDIR /app/src/configmap-reload
-RUN cargo build --release
-
+WORKDIR /configmap-reload
 COPY ./ ./
+
+ARG use_mirror
+RUN if [ $use_mirror ]; then \
+        mkdir -p $HOME/.cargo; \
+        mv -f ./docker/cargo_config  $HOME/.cargo/config; \
+    fi
 RUN cargo build --release
 
-FROM debian:stable-slim
-WORKDIR /app
-RUN apt update \
-    && apt install -y openssl ca-certificates \
-    && apt clean \
-    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+#####################################
 
-COPY --from=builder /app/src/configmap-reload/target/release/configmap-reload ./
-RUN chmod +x /app/configmap-reload
-CMD ["/app/configmap-reload"]
+FROM alpine:latest as prod
+
+WORKDIR /configmap-reload/
+
+RUN apk add --no-cache ca-certificates 
+
+COPY --from=0 /configmap-reload/target/x86_64-unknown-linux-musl/release/configmap-reload .
+RUN chmod +x configmap-reload
+CMD ["./configmap-reload"]
