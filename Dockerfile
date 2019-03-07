@@ -64,5 +64,5 @@ RUN apt update \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 COPY --from=builder /app/src/configmap-reload/target/release/configmap-reload ./
-
+RUN chmod +x /app/configmap-reload
 CMD ["/app/configmap-reload"]
