@@ -25,7 +25,7 @@
 
 FROM debian:stable-slim
 RUN apt update \
-    && apt install -y openssl ca-certificates \
+    && apt install -y openssl ca-certificates libssl1.0.0 libssl-dev \
     && apt clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 COPY ./target/release/configmap-reload /configmap-reload
