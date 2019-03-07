@@ -61,10 +61,9 @@ RUN cargo build --release
 
 FROM alpine:latest as prod
 
-WORKDIR /configmap-reload/
-
 RUN apk add --no-cache ca-certificates 
 
-COPY --from=0 /configmap-reload/target/x86_64-unknown-linux-musl/release/configmap-reload .
-RUN chmod +x configmap-reload
-CMD ["./configmap-reload"]
+COPY --from=0 /configmap-reload/target/x86_64-unknown-linux-musl/release/configmap-reload /usr/bin/configmap-reload
+RUN chmod +x /usr/bin/configmap-reload
+
+ENTRYPOINT ["configmap-reload"]
