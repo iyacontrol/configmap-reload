@@ -37,10 +37,32 @@
 # ENTRYPOINT ["/configmap-reload"]
 
 
-FROM frolvlad/alpine-rust
-RUN apk add --update openssl && \
-    rm -rf /var/cache/apk/*
-WORKDIR /app/configmap-reload
+# FROM frolvlad/alpine-rust
+# RUN apk add --update openssl && \
+#     rm -rf /var/cache/apk/*
+# WORKDIR /app/configmap-reload
+# COPY ./ ./
+# RUN cargo build --release
+# ENTRYPOINT ["/app/configmap-reload/target/release/configmap-reload"]
+
+FROM rustlang/rust:nightly as builder
+WORKDIR /app/src
+RUN USER=root cargo new --bin configmap-reload
+COPY Cargo.toml Cargo.lock ./ht/
+
+WORKDIR /app/src/configmap-reload
+RUN cargo build --release
+
 COPY ./ ./
 RUN cargo build --release
-ENTRYPOINT ["/app/configmap-reload/target/release/configmap-reload"]
+
+FROM debian:stable-slim
+WORKDIR /app
+RUN apt update \
+    && apt install -y openssl ca-certificates \
+    && apt clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+COPY --from=builder /app/src/configmap-reload/target/release/configmap-reload ./
+
+CMD ["/app/configmap-reload"]
