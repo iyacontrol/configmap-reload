@@ -19,6 +19,6 @@
 # COPY ./target/release/configmap-reload /configmap-reload
 # ENTRYPOINT ["/configmap-reload"]
 
-FROM centos:7
+FROM centos:7.6.1810
 COPY ./target/release/configmap-reload /configmap-reload
 ENTRYPOINT ["/configmap-reload"]
