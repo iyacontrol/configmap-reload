@@ -6,6 +6,7 @@ extern crate reqwest;
 
 
 use log::{debug, info,error};
+use notify::inotify::INotifyWatcher;
 use notify::{Watcher, RecursiveMode, RawEvent, raw_watcher};
 use std::sync::mpsc::channel;
 use clap::{crate_authors, crate_description, crate_name, crate_version};
@@ -123,7 +124,7 @@ fn main() {
 
     // Create a watcher object, delivering debounced events.
     // The notification back-end is selected based on the platform.
-    let mut watcher = raw_watcher(tx).unwrap();
+    let mut watcher: INotifyWatcher = raw_watcher(tx).unwrap();
 
     // Add a path to be watched. All files and directories at that path and
     // below will be monitored for changes.
