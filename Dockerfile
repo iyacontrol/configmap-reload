@@ -19,7 +19,6 @@
 # COPY ./target/release/configmap-reload /configmap-reload
 # ENTRYPOINT ["/configmap-reload"]
 
-FROM centos:7.6.1810
-RUN wget http://mirrors.ustc.edu.cn/gnu/libc/glibc-2.18.tar.gz && tar -zxvf glibc-2.18.tar.gz && cd glibc-2.18 && mdkir build && cd build && ../configure --prefix=/usr && make -j4 && sudo make install
+FROM alpine:3.9
 COPY ./target/release/configmap-reload /configmap-reload
 ENTRYPOINT ["/configmap-reload"]
