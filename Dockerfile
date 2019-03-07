@@ -38,6 +38,8 @@
 
 
 FROM frolvlad/alpine-rust
+RUN apk add --update openssl && \
+    rm -rf /var/cache/apk/*
 WORKDIR /app/configmap-reload
 COPY ./ ./
 RUN cargo build --release
