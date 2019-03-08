@@ -133,6 +133,7 @@ fn main() {
     loop {
         match rx.recv() {
             Ok(RawEvent{path: Some(path), op: Ok(op), cookie: _}) => {
+                debug!("broken event: {:?}, {:?}", path, op);
                 if op == notify::op::CREATE {
                     if file_base(path.to_str().unwrap()) == "..data" {
                         info!("{}", "config map updated");
