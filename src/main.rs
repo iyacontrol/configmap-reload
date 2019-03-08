@@ -6,12 +6,12 @@ extern crate reqwest;
 
 
 use log::{debug, info,error};
-use notify::inotify::INotifyWatcher;
 use notify::{Watcher, RecursiveMode, RawEvent, raw_watcher};
 use std::sync::mpsc::channel;
 use clap::{crate_authors, crate_description, crate_name, crate_version};
 use std::process;
 use std::str::FromStr;
+use std::{thread, time};
 
 
 
@@ -124,7 +124,7 @@ fn main() {
 
     // Create a watcher object, delivering debounced events.
     // The notification back-end is selected based on the platform.
-    let mut watcher: INotifyWatcher = raw_watcher(tx).unwrap();
+    let mut watcher = raw_watcher(tx).unwrap();
 
     // Add a path to be watched. All files and directories at that path and
     // below will be monitored for changes.
@@ -133,9 +133,10 @@ fn main() {
     loop {
         match rx.recv() {
             Ok(RawEvent{path: Some(path), op: Ok(op), cookie: _}) => {
-                debug!("broken event: {:?}, {:?}", path, op);
-                if op == notify::op::CREATE {
+                if op == notify::op::RENAME {
                     if file_base(path.to_str().unwrap()) == "..data" {
+                        thread::sleep(time::Duration::from_secs(3));
+
                         info!("{}", "config map updated");
                         let client = reqwest::Client::new();
                         match client.request(webhook_method.clone(), webhook_url).send() {
