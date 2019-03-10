@@ -5,13 +5,14 @@ extern crate clap;
 extern crate reqwest;
 
 
-use log::{debug, info,error};
-use notify::{Watcher, RecursiveMode, RawEvent, raw_watcher};
+
 use std::sync::mpsc::channel;
-use clap::{crate_authors, crate_description, crate_name, crate_version};
 use std::process;
 use std::str::FromStr;
 use std::{thread, time};
+use clap::{crate_authors, crate_description, crate_name, crate_version};
+use log::{debug, info, error};
+use notify::{Watcher, RecursiveMode, RawEvent, raw_watcher};
 
 
 
